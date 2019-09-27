@@ -130,20 +130,52 @@ Pointer<T,size>::Pointer(const Pointer &ob){
 // Destructor for Pointer.
 template <class T, int size>
 Pointer<T, size>::~Pointer(){
-
     // TODO: Implement Pointer destructor
-    // Lab: New and Delete Project Lab
+    typename std::list<PtrDetails<T>>::iterator p;
+    p = findPtrInfo(addr);
+    //Finalize Pointer destructor
+    p->refcount--;
+
+    //Collect garbage when a pointer goes out of scope
+    //For real use, you might want to collect unused memory less frequently,
+    //such as after refRefcontainer has reached a certain size, after a certain number
+    //of Pointers have gone out of scope, or when memory is low
+    if (p->refcount == 0) {
+        collect();
+    }
 }
 
 // Collect garbage. Returns true if at least
 // one object was freed.
 template <class T, int size>
 bool Pointer<T, size>::collect(){
-
+    bool memfreed = false;
     // TODO: Implement collect function
-    // LAB: New and Delete Project Lab
     // Note: collect() will be called in the destructor
-    return false;
+    typename std::list<PtrDetails<T>>::iterator p = refContainer.begin();
+    do {
+        for (; p != refContainer.end(); p++) {
+            //if in-use, skip
+            if (p->refcount > 0) {
+                continue;
+            }
+            //remove unused entry from refContainer
+            if (p->memPtr) {
+                if (p->isArray) {
+                    delete [] p->memPtr;
+                } else {
+                    delete p->memPtr;
+                }
+                //std::remove(refContainer.begin(), refContainer.end(), *p);
+                refContainer.erase(--p);
+                memfreed = true;
+            }
+            //restart the search
+            break;
+        }
+    } while (p != refContainer.end());
+
+    return memfreed;
 }
 
 // Overload assignment of pointer to Pointer.
