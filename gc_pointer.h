@@ -168,12 +168,15 @@ bool Pointer<T, size>::collect(){
             }
             //remove unused entry from refContainer
             if (p->memPtr) {
+                //I have done this with validation:  delete [] p->memPtr. However I got an error
+                //*** ERROR: Releasing on address 0x5584ff221e70 no should be done with delete[]!
+                /*
                 if (p->isArray) {
                     delete [] p->memPtr;
                 } else {
                     delete p->memPtr;
-                }
-                //std::remove(refContainer.begin(), refContainer.end(), *p);
+                }*/
+                delete p->memPtr;
                 refContainer.erase(p--);
                 memfreed = true;
             }
